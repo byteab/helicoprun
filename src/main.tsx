@@ -1,5 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+// setup phaser
+import './phaser'
 import App from './App'
 import './index.css'
 

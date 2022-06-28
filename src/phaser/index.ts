@@ -1,7 +1,13 @@
 import Phaser from 'phaser'
+import { Game } from './scenes/Game'
+import { StartMenu } from './scenes/StartMenu'
 
-const config:Phaser.Types.Core.GameConfig = {
-
+const config: Phaser.Types.Core.GameConfig = {
+  type: Phaser.AUTO,
+  width: 400,
+  height: 600,
+  parent: 'phaser',
+  scene: [StartMenu, Game],
 }
 
-export default new Phaser.Game(config)
+const game = new Phaser.Game(config)
