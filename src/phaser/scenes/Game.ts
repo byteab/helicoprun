@@ -14,26 +14,31 @@ export class Game extends Scene {
 
   create() {
     this.helicopter = this.physics.add.sprite(100, 100, 'helicopter')
-    const helicopterAnimation = this.anims.create({
+    this.helicopter.setInteractive()
+    this.anims.create({
       key: 'move',
       frames: this.anims.generateFrameNumbers('helicopter', {}),
       frameRate: 100,
       repeat: -1,
     })
     this.helicopter.anims.startAnimation('move')
+    this.helicopter.body.allowGravity = false
+    this.helicopter.refreshBody()
   }
 
-  update(time: number, delta: number): void {
-    if (this.input.activePointer.isDown) {
-      this.helicopter!.body.allowGravity = false
-    } else {
-      this.helicopter!.body.allowGravity = true
+  update(): void {
+
+    if(!this.helicopter) {
+      throw new Error('helicopter game object not exists!')
     }
-    // if (this.input.mousePointer.isDown) {
-    //   this.helicopter?.setGravityY(0).refreshBody()
-    //   this.helicopter!.y -= 2
-    // } else {
-    //   this.helicopter?.setGravityY(10).refreshBody()
-    // }
+
+    if (this.input.activePointer.isDown) {
+      this.helicopter.y -= 2
+      this.helicopter.angle = 5
+    } else {
+      this.helicopter.y += 2
+      this.helicopter.angle = 0
+    }
+
   }
 }
