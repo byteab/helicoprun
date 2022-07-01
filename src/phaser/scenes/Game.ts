@@ -6,30 +6,34 @@ const gameState = {
   curvesGroup: Phaser.Physics.Arcade.StaticGroup,
 }
 
-const heightThirdPart = window.innerHeight / 3
+const SCREEN_WIDTH = window.innerWidth
+const SCREEN_HEIGHT = window.innerHeight
+const LINE_WIDTH = window.innerWidth / 4
+
+const ONE_THIRD_OF_SCREEN_HEIGHT = window.innerHeight / 3
 const widthFourthPart = window.innerWidth / 4
 
-const maximumRoadTopY = heightThirdPart - heightThirdPart / 3
-const minimumRoadTopY = heightThirdPart
-const roadHeigh = heightThirdPart + heightThirdPart / 3
-const eachLineDistance = widthFourthPart
+const MAXIMUM_ROAD_TOP_Y =
+  ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 3
+
+const MINIMUM_ROAD_TOP_Y = ONE_THIRD_OF_SCREEN_HEIGHT
+
+const ROAD_HEIGHT = ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 3
 
 export class Game extends Scene {
   helicopter?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
   groupOfCurves?: Phaser.Physics.Arcade.StaticGroup
-  topLines?: Phaser.Physics.Arcade.StaticGroup
-  bottomLines?: Phaser.Physics.Arcade.StaticGroup
-  lastPointOfLine: {
-    y: number
-    x: number
-  }
+  topLines?: Phaser.Curves.Path
+  bottomLines?: Phaser.Curves.Path
+  moveSpeed: number
+  /** used to track how many pixel landscape is moved */
+  moveOffset: number
+  drawer?: Phaser.GameObjects.Graphics
+
   constructor() {
     super({ key: 'Game' })
-    this.lastPointOfLine = {
-      y: maximumRoadTopY,
-      x: -widthFourthPart,
-    }
-    console.log({ height: window.innerHeight, width: window.innerWidth })
+    this.moveOffset = 0
+    this.moveSpeed = 1
   }
   preload() {
     this.load.spritesheet('helicopter', 'src/assets/helicopter.png', {
@@ -51,7 +55,7 @@ export class Game extends Scene {
       .setOrigin(0)
     this.helicopter = this.physics.add.sprite(
       widthFourthPart / 2,
-      heightThirdPart + heightThirdPart / 2,
+      ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2,
       'helicopter'
     )
     this.helicopter.setInteractive()
@@ -66,150 +70,99 @@ export class Game extends Scene {
     this.helicopter.refreshBody()
 
     // Graphics part
+    this.drawer = this.add.graphics()
     // gameState.curvesGroup = this.physics.add.staticGroup()
-    this.topLines = this.physics.add.staticGroup()
-    this.bottomLines = this.physics.add.staticGroup()
+    this.topLines = new Phaser.Curves.Path()
+    this.bottomLines = new Phaser.Curves.Path()
 
-    this.physics.add.collider(this.topLines, this.helicopter, () => {
-      console.log('collide')
-    })
+    // generate initial lines
+    // consider one more line as buffer
+    for (let x = 0; x <= SCREEN_WIDTH + LINE_WIDTH; x += LINE_WIDTH) {
+      const topLineY = Phaser.Math.Between(
+        MAXIMUM_ROAD_TOP_Y,
+        MINIMUM_ROAD_TOP_Y
+      )
+      const BottomLineY = topLineY + ROAD_HEIGHT
 
-    this.drawBoundaries()
-
-    for (const _ in Array(1000).fill(0)) {
-      this.drawCurve()
+      this.topLines.lineTo(x, topLineY)
+      this.bottomLines.lineTo(x, BottomLineY)
     }
+
+    this.moveOffset = 0
   }
 
-  // make the generated lines inside a boundary
-  // make the lines to remove when fully overlap with the world
-  // create new line when one line overlap
-  // make sprite and lines to overlap
-
-  // have a group of curves
-  // add new curve to the group
-  // make sure that every time we have 4 curves in the group
-  // call draw curve again when one of curves are overlaping with the world
-  // store latest point of prev line in an object
-
-  drawBoundaries() {
-    const graphicTop = this.add.graphics()
-    graphicTop.lineStyle(1, 0xff00ff)
-    graphicTop.beginPath()
-    graphicTop.moveTo(0, maximumRoadTopY)
-    graphicTop.lineTo(window.innerWidth, maximumRoadTopY)
-    graphicTop.closePath()
-    graphicTop.strokePath()
-
-    const graphicMinTop = this.add.graphics()
-    graphicMinTop.lineStyle(1, 0xffbbaa)
-    graphicMinTop.beginPath()
-    graphicMinTop.moveTo(0, minimumRoadTopY)
-    graphicMinTop.lineTo(window.innerWidth, minimumRoadTopY)
-    graphicMinTop.closePath()
-    graphicMinTop.strokePath()
-
-    //bottom boundary
-    const graphicBottom = this.add.graphics()
-    graphicBottom.lineStyle(1, 0xff00ff)
-    graphicBottom.beginPath()
-    graphicBottom.moveTo(0, heightThirdPart * 2 + heightThirdPart / 3)
-    graphicBottom.lineTo(
-      window.innerWidth,
-      heightThirdPart * 2 + heightThirdPart / 3
-    )
-    graphicBottom.closePath()
-    graphicBottom.strokePath()
-
-    const graphicMinBottom = this.add.graphics()
-    graphicMinBottom.lineStyle(1, 0xffbbaa)
-    graphicMinBottom.beginPath()
-    graphicMinBottom.moveTo(0, heightThirdPart * 2)
-    graphicMinBottom.lineTo(window.innerWidth, heightThirdPart * 2)
-    graphicMinBottom.closePath()
-    graphicMinBottom.strokePath()
-  }
-
-  generateRandom(min: number, max: number) {
-    // find diff
-    const difference = max - min
-
-    // generate random number
-    let rand = Math.random()
-
-    // multiply with difference
-    rand = Math.floor(rand * difference)
-
-    // add with min value
-    rand = rand + min
-
-    return rand
-  }
-
-  drawCurve() {
-    this.lastPointOfLine.x = this.lastPointOfLine.x + eachLineDistance
-
-    // const random = minimumRoadTopY + Math.random() * maximumRoadTopY
-    // in here maximumTopY is smaller than minimumTopY
-    // -------    maximum top y. eg: 10px
-    //
-    // -------    minimum top y. eg: 30px
-    const random = this.generateRandom(maximumRoadTopY, minimumRoadTopY)
-
-    // top line
-    const graphicTop = this.add.graphics()
-    graphicTop.lineStyle(1, 0x000000)
-    graphicTop.beginPath()
-    graphicTop.moveTo(this.lastPointOfLine.x, this.lastPointOfLine.y)
-    graphicTop.lineTo(this.lastPointOfLine.x + eachLineDistance, random)
-    graphicTop.closePath()
-    graphicTop.strokePath()
-    this.topLines?.add(graphicTop)
-
-    // bottom line
-    const graphicBottom = this.add.graphics()
-    graphicBottom.lineStyle(1, 0x000000)
-    graphicBottom.beginPath()
-    graphicBottom.moveTo(
-      this.lastPointOfLine.x,
-      this.lastPointOfLine.y + roadHeigh
-    )
-    graphicBottom.lineTo(
-      this.lastPointOfLine.x + eachLineDistance,
-      random + roadHeigh
-    )
-    graphicBottom.closePath()
-    graphicBottom.strokePath()
-    this.bottomLines?.add(graphicBottom)
-
-    this.lastPointOfLine.y = random
-  }
-
-  update(time: any): void {
+  update(): void {
     if (!this.helicopter) {
       throw new Error('helicopter game object not exists!')
     }
-
-    if (this.topLines) {
-      this.topLines.getChildren().forEach((child) => {
-        const graphic = child as Phaser.GameObjects.Graphics
-        graphic.x -= 3
-      })
+    if (!this.drawer) {
+      throw new Error('drawer not exists!')
     }
 
-    if (this.bottomLines) {
-      this.bottomLines.getChildren().forEach((child) => {
-        const graphic = child as Phaser.GameObjects.Graphics
-        graphic.x -= 3
-      })
+    if (!this.topLines?.getLength() || !this.bottomLines?.getLength()) {
+      throw new Error('top and bottom lines should not be empty')
     }
+
+    this.cameras.main.x += this.moveSpeed
+    this.helicopter.x += this.moveSpeed
+    this.moveOffset += this.moveSpeed
 
     if (this.input.activePointer.isDown) {
-      // this.helicopter.y -= 2
+      this.helicopter.y -= 2
       this.helicopter.angle = 5
     } else {
-      // this.helicopter.y += 2
+      this.helicopter.y += 2
       this.helicopter.angle = 0
     }
+
+    if (this.moveOffset >= 200) {
+      console.log('move offset if clause')
+      const topLineY = Phaser.Math.Between(
+        MAXIMUM_ROAD_TOP_Y,
+        MINIMUM_ROAD_TOP_Y
+      )
+      const BottomLineY = topLineY + ROAD_HEIGHT
+
+      this.topLines.lineTo(this.topLines.getEndPoint().x + LINE_WIDTH, topLineY)
+      this.bottomLines.lineTo(
+        this.bottomLines.getEndPoint().x + LINE_WIDTH,
+        BottomLineY
+      )
+      this.topLines.curves.shift()
+      this.bottomLines.curves.shift()
+      this.moveOffset = 0
+    }
+
+    // clear previous command to avoid necessary redraw
+    this.drawer.clear()
+
+    if (this.topLines?.curves.length) {
+      this.drawLandChunk(this.topLines.curves, 'top')
+    }
+
+    if (this.bottomLines?.curves.length) {
+      this.drawLandChunk(this.bottomLines.curves, 'bottom')
+    }
+  }
+
+  drawLandChunk(curves: Phaser.Curves.Curve[], position: 'top' | 'bottom') {
+    const yValue: number = position === 'top' ? 0 : SCREEN_HEIGHT
+
+    const points: { x: number; y: number }[] = [
+      {
+        x: 0,
+        y: yValue,
+      },
+    ]
+
+    for (let i = 0; i < curves.length; i++) {
+      const eachCurve = curves[i]
+      points.push(eachCurve.getStartPoint(), eachCurve.getEndPoint())
+    }
+
+    points.push({ x: curves[curves.length - 1].getEndPoint().x, y: yValue })
+
+    this.drawer!.fillStyle(0xcc183a)
+    this.drawer!.fillPoints(points, true, true)
   }
 }
