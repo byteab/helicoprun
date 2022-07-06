@@ -41,10 +41,14 @@ export class Game extends Scene {
     this.moveSpeed = 4
   }
   preload() {
-    this.load.spritesheet('helicopter', 'src/assets/helicopter.png', {
-      frameWidth: 96,
-      frameHeight: 32,
+    this.load.spritesheet('helicopter', 'src/assets/heli3.png', {
+      frameWidth: 641.6,
+      frameHeight: 381,
     })
+    // this.load.spritesheet('helicopter', 'src/assets/helicopter.png', {
+    //   frameWidth: 96,
+    //   frameHeight: 32,
+    // })
   }
 
   create() {
@@ -64,13 +68,17 @@ export class Game extends Scene {
       'helicopter'
     )
 
+    this.helicopter.scale = 0.1
+
+    this.helicopter.setTint(0x2b0101)
+
     this.boxes = this.physics.add.staticGroup()
 
     this.helicopter.setInteractive()
     this.anims.create({
       key: 'move',
       frames: this.anims.generateFrameNumbers('helicopter', {}),
-      frameRate: 100,
+      frameRate: 200,
       repeat: -1,
     })
     this.helicopter.anims.startAnimation('move')
@@ -111,7 +119,7 @@ export class Game extends Scene {
   }
 
   drawRectangle(xOffset: number, yOffset: number) {
-    const rectangleHeight = ROAD_HEIGHT / 4
+    const rectangleHeight = ROAD_HEIGHT / 3
     const rectangleWidth = LINE_WIDTH / 8
     const helicopterHeight = this.helicopter!.displayHeight
 
@@ -119,7 +127,7 @@ export class Game extends Scene {
       // top
       yOffset - rectangleHeight / 10,
       // middle top
-      yOffset + helicopterHeight * 2,
+      yOffset + helicopterHeight * 3,
       // middle bottom
       yOffset + helicopterHeight * 5,
       // bottom
@@ -137,7 +145,7 @@ export class Game extends Scene {
         randomYOffset,
         rectangleWidth,
         rectangleHeight,
-        0xcc183a
+        0x2b0101
       )
       .setOrigin(0, 0)
     this.boxes?.add(rectangle)
@@ -162,12 +170,14 @@ export class Game extends Scene {
     if (this.input.activePointer.isDown) {
       // this.helicopter.y -= 2
       this.helicopter.angle = 5
-      this.helicopter.setVelocityY(-200)
+      this.helicopter.setAccelerationY(-600)
     } else {
       // this.helicopter.y += 2
       this.helicopter.angle = 0
-      this.helicopter.setVelocityY(150)
+      this.helicopter.setAccelerationY(600)
     }
+
+    this.helicopter.setMaxVelocity(200)
 
     if (this.moveOffset >= LINE_WIDTH) {
       const topLineY = Phaser.Math.Between(
@@ -177,18 +187,12 @@ export class Game extends Scene {
 
       const bottomLineY = topLineY + ROAD_HEIGHT
 
-      console.log({
-        MAX_TOP_Y: MAXIMUM_ROAD_TOP_Y,
-        MIN_TOP_Y: MINIMUM_ROAD_TOP_Y,
-        TOP_LINE_Y: topLineY,
-        BOTTOM_LINE_Y: bottomLineY,
-      })
 
       const endPointX = this.topLines.getEndPoint().x
 
-      if (endPointX > 2 && Phaser.Math.Between(0, 1) === 1) {
-        this.drawRectangle(endPointX, topLineY)
-      }
+      // if (endPointX > 2 && Phaser.Math.Between(0, 1) === 1) {
+      this.drawRectangle(endPointX, topLineY)
+      // }
 
       this.topLines.lineTo(this.topLines.getEndPoint().x + LINE_WIDTH, topLineY)
       this.bottomLines.lineTo(
@@ -228,7 +232,7 @@ export class Game extends Scene {
 
     points.push({ x: lastX, y: yValue })
 
-    this.drawer!.fillStyle(0xcc183a)
+    this.drawer!.fillStyle(0x2b0101)
     this.drawer!.fillPoints(points, true, true)
   }
 }
