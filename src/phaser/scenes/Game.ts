@@ -17,11 +17,13 @@ const MAXIMUM_ROAD_TOP_Y = Math.round(
   ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 2
 )
 
-const MINIMUM_ROAD_TOP_Y = Math.round(ONE_THIRD_OF_SCREEN_HEIGHT)
+const MINIMUM_ROAD_TOP_Y = Math.round(ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 4)
 
 const ROAD_HEIGHT = Math.round(
   ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2
 )
+
+const HELICOPTER_HEIGHT = ROAD_HEIGHT / 10
 
 export class Game extends Scene {
   helicopter?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
@@ -34,11 +36,15 @@ export class Game extends Scene {
   /** used to track how many pixel landscape is moved */
   moveOffset: number
   drawer?: Phaser.GameObjects.Graphics
+  /** previous position that box rendered */
+  prevBoxOffset?: number
+  initialLoad: boolean
 
   constructor() {
     super({ key: 'Game' })
     this.moveOffset = 0
-    this.moveSpeed = 4
+    this.moveSpeed = 6
+    this.initialLoad = false
   }
   preload() {
     this.load.spritesheet('helicopter', 'src/assets/chopper.png', {
@@ -68,7 +74,7 @@ export class Game extends Scene {
       'helicopter'
     )
 
-    this.helicopter.displayHeight = ROAD_HEIGHT / 5
+    this.helicopter.displayHeight = HELICOPTER_HEIGHT
     this.helicopter.scaleX = this.helicopter.scaleY
 
 
@@ -123,24 +129,28 @@ export class Game extends Scene {
 
   drawRectangle(xOffset: number, yOffset: number) {
     const oneFiftOfRoadHeight = ROAD_HEIGHT / 5
-    const rectangleHeight = oneFiftOfRoadHeight * 2 + oneFiftOfRoadHeight / 3
+    const rectangleHeight = oneFiftOfRoadHeight * 2
     const rectangleWidth = LINE_WIDTH / 8
 
     const positions = [
       // top
-      yOffset,
+      Math.round(yOffset),
       // // bottom
-      yOffset + ROAD_HEIGHT - rectangleHeight,
+      Math.round(yOffset + ROAD_HEIGHT - rectangleHeight),
       // // middle top
-      yOffset + oneFiftOfRoadHeight,
+      Math.round(yOffset + oneFiftOfRoadHeight),
       // // middle bottom
-      yOffset + oneFiftOfRoadHeight * 2,
+      Math.round(yOffset + oneFiftOfRoadHeight * 2),
     ]
 
+    if(this.prevBoxOffset !== undefined) {
+      positions.splice(this.prevBoxOffset, 1)
+    }
+
     // pick a random position
-    const [randomYOffset] = positions
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 1)
+    const randomYOffset = positions[ Math.floor( Math.random() * positions.length ) ]
+    
+    this.prevBoxOffset = positions.indexOf(randomYOffset)
 
     const rectangle = this.add
       .rectangle(
@@ -148,8 +158,7 @@ export class Game extends Scene {
         randomYOffset,
         rectangleWidth,
         rectangleHeight,
-        // 0x2b0101
-        0xf22c2c
+        0x2b0101
       )
       .setOrigin(0, 0)
     this.boxes?.add(rectangle)
@@ -171,17 +180,19 @@ export class Game extends Scene {
     this.helicopter.x += this.moveSpeed
     this.moveOffset += this.moveSpeed
 
+
     if (this.input.activePointer.isDown) {
+      this.initialLoad = true
       // this.helicopter.y -= 2
       this.helicopter.angle = 5
-      this.helicopter.setAccelerationY(-600)
-    } else {
+      this.helicopter.setAccelerationY(-900)
+    } else if (this.initialLoad) {
       // this.helicopter.y += 2
       this.helicopter.angle = 0
-      this.helicopter.setAccelerationY(600)
+      this.helicopter.setAccelerationY(900)
     }
 
-    this.helicopter.setMaxVelocity(200)
+    this.helicopter.setMaxVelocity(300)
 
     if (this.moveOffset >= LINE_WIDTH) {
       const topLineY = Phaser.Math.Between(
