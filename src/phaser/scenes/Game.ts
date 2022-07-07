@@ -14,13 +14,13 @@ const ONE_THIRD_OF_SCREEN_HEIGHT = window.innerHeight / 3
 const widthFourthPart = window.innerWidth / 4
 
 const MAXIMUM_ROAD_TOP_Y = Math.round(
-  ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 3
+  ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 2
 )
 
 const MINIMUM_ROAD_TOP_Y = Math.round(ONE_THIRD_OF_SCREEN_HEIGHT)
 
 const ROAD_HEIGHT = Math.round(
-  ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 3
+  ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2
 )
 
 export class Game extends Scene {
@@ -41,9 +41,9 @@ export class Game extends Scene {
     this.moveSpeed = 4
   }
   preload() {
-    this.load.spritesheet('helicopter', 'src/assets/heli3.png', {
-      frameWidth: 641.6,
-      frameHeight: 381,
+    this.load.spritesheet('helicopter', 'src/assets/chopper.png', {
+      frameWidth: 154,
+      frameHeight: 91,
     })
     // this.load.spritesheet('helicopter', 'src/assets/helicopter.png', {
     //   frameWidth: 96,
@@ -68,7 +68,9 @@ export class Game extends Scene {
       'helicopter'
     )
 
-    this.helicopter.scale = 0.1
+    this.helicopter.displayHeight = ROAD_HEIGHT / 5
+    this.helicopter.scaleX = this.helicopter.scaleY
+
 
     this.helicopter.setTint(0x2b0101)
 
@@ -106,6 +108,7 @@ export class Game extends Scene {
       this.topLines.lineTo(x, topLineY)
       this.bottomLines.lineTo(x, BottomLineY)
 
+      // x > 2 will make it to not draw any box on first steps of game
       if (x > 2 && Phaser.Math.Between(0, 3) === 1) {
         this.drawRectangle(x, topLineY)
       }
@@ -119,19 +122,19 @@ export class Game extends Scene {
   }
 
   drawRectangle(xOffset: number, yOffset: number) {
-    const rectangleHeight = ROAD_HEIGHT / 3
+    const oneFiftOfRoadHeight = ROAD_HEIGHT / 5
+    const rectangleHeight = oneFiftOfRoadHeight * 2 + oneFiftOfRoadHeight / 3
     const rectangleWidth = LINE_WIDTH / 8
-    const helicopterHeight = this.helicopter!.displayHeight
 
     const positions = [
       // top
-      yOffset - rectangleHeight / 10,
-      // middle top
-      yOffset + helicopterHeight * 3,
-      // middle bottom
-      yOffset + helicopterHeight * 5,
-      // bottom
+      yOffset,
+      // // bottom
       yOffset + ROAD_HEIGHT - rectangleHeight,
+      // // middle top
+      yOffset + oneFiftOfRoadHeight,
+      // // middle bottom
+      yOffset + oneFiftOfRoadHeight * 2,
     ]
 
     // pick a random position
@@ -145,7 +148,8 @@ export class Game extends Scene {
         randomYOffset,
         rectangleWidth,
         rectangleHeight,
-        0x2b0101
+        // 0x2b0101
+        0xf22c2c
       )
       .setOrigin(0, 0)
     this.boxes?.add(rectangle)
