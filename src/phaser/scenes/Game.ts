@@ -45,6 +45,7 @@ export class Game extends Scene {
   score: number
   timer: number
   gameOver: boolean
+  helicopterHalfHeight: number
 
   constructor() {
     super({ key: 'Game' })
@@ -54,6 +55,7 @@ export class Game extends Scene {
     this.score = 0
     this.timer = 0
     this.gameOver = false
+    this.helicopterHalfHeight = 0
   }
   preload() {
     this.load.spritesheet('helicopter', 'src/assets/chopper.png', {
@@ -76,10 +78,10 @@ export class Game extends Scene {
       'helicopter'
     )
 
+    this.helicopterHalfHeight = this.helicopter.displayHeight / 6
+
     this.helicopter.displayHeight = HELICOPTER_HEIGHT
     this.helicopter.scaleX = this.helicopter.scaleY
-
-    this.helicopter.setTint(0x2b0101)
 
     this.boxes = this.physics.add.staticGroup()
 
@@ -123,6 +125,8 @@ export class Game extends Scene {
       }
     }
 
+    this.helicopter?.setTint(0xff0000)
+
     this.physics.add.collider(this.boxes, this.helicopter, () => {
       this.setGameOver()
     })
@@ -131,7 +135,7 @@ export class Game extends Scene {
       .text(SCREEN_WIDTH / 20, SCREEN_HEIGHT / 20, `Score: ${this.score}`, {
         fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
         color: '#ffffff',
-        fontSize: '30px',
+        fontSize: SCREEN_HEIGHT / 20 + 'px',
       })
       .setScrollFactor(0)
 
@@ -139,7 +143,6 @@ export class Game extends Scene {
   }
 
   setGameOver() {
-    this.helicopter?.setTint(0xff0000)
     this.cameras.main.shake(250, 0.005)
     this.physics.pause()
     this.gameOver = true
@@ -252,6 +255,8 @@ export class Game extends Scene {
       this.moveOffset = 0
     }
 
+    this.helicopter.y += 0.5
+
     //  Get the position of the plane on the path
     const x =
       this.helicopter.x /
@@ -266,7 +271,7 @@ export class Game extends Scene {
       this.setGameOver()
     }
 
-    if (bottom.y <= this.helicopter.y) {
+    if (bottom.y <= this.helicopter.y + this.helicopterHalfHeight) {
       this.setGameOver()
     }
 
