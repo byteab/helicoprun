@@ -258,7 +258,7 @@ export class Game extends Scene {
     //  Get the position of the plane on the path
     const x =
       this.helicopter.x /
-      (SCREEN_WIDTH + this.cameras.main.scrollX - this.moveOffset)
+      (SCREEN_WIDTH + LINE_WIDTH + this.cameras.main.scrollX - this.moveOffset)
 
     //  These vec2s contain the x/y of the plane on the path
     //  By checking the plane.y value against the top.y and bottom.y we know if it's hit the wall or not
