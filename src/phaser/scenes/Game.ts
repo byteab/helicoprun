@@ -124,7 +124,7 @@ export class Game extends Scene {
     }
 
     this.physics.add.collider(this.boxes, this.helicopter, () => {
-      // this.setGameOver()
+      this.setGameOver()
     })
 
     this.scoreText = this.add
@@ -233,13 +233,18 @@ export class Game extends Scene {
 
       const endPointX = this.topLines.getEndPoint().x
 
-      // if (endPointX > 2 && Phaser.Math.Between(0, 1) > 0) {
-      this.drawRectangle(endPointX, topLineY)
-      // }
+      if (endPointX > 2 && Phaser.Math.Between(0, 1) > 0) {
+        this.drawRectangle(endPointX, topLineY)
+      }
 
-      this.topLines.lineTo(this.topLines.getEndPoint().x + LINE_WIDTH, topLineY)
+      const correction = this.moveOffset - LINE_WIDTH
+
+      this.topLines.lineTo(
+        this.topLines.getEndPoint().x + LINE_WIDTH + correction,
+        topLineY
+      )
       this.bottomLines.lineTo(
-        this.bottomLines.getEndPoint().x + LINE_WIDTH,
+        this.bottomLines.getEndPoint().x + LINE_WIDTH + correction,
         bottomLineY
       )
       // this.topLines?.curves.shift()
@@ -267,9 +272,9 @@ export class Game extends Scene {
 
     // clear previous command to avoid necessary redraw
     this.drawer.clear()
-    this.drawer.fillStyle(0xff0000)
-    this.drawer.fillRect(top.x - 2, top.y - 2, 10, 10)
-    this.drawer.fillRect(bottom.x - 2, bottom.y - 2, 10, 10)
+    // this.drawer.fillStyle(0xff0000)
+    // this.drawer.fillRect(top.x - 2, top.y - 2, 10, 10)
+    // this.drawer.fillRect(bottom.x - 2, bottom.y - 2, 10, 10)
 
     this.drawLandChunk(this.topLines.curves, 'top')
 
