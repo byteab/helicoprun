@@ -27,6 +27,11 @@ const ROAD_HEIGHT = Math.round(
 
 const HELICOPTER_HEIGHT = ROAD_HEIGHT / 10
 
+// rectangles
+const oneFiftOfRoadHeight = ROAD_HEIGHT / 5
+const rectangleHeight = oneFiftOfRoadHeight * 2
+const rectangleWidth = LINE_WIDTH / 10
+
 export class Game extends Scene {
   helicopter?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
   groupOfCurves?: Phaser.Physics.Arcade.StaticGroup
@@ -46,6 +51,7 @@ export class Game extends Scene {
   timer: number
   gameOver: boolean
   helicopterHalfHeight: number
+  chunkCounter: number
 
   constructor() {
     super({ key: 'Game' })
@@ -56,6 +62,7 @@ export class Game extends Scene {
     this.timer = 0
     this.gameOver = false
     this.helicopterHalfHeight = 0
+    this.chunkCounter = 0
   }
   preload() {
     this.load.spritesheet('helicopter', 'src/assets/chopper.png', {
@@ -120,7 +127,7 @@ export class Game extends Scene {
       this.bottomLines.lineTo(x, BottomLineY)
 
       // x > 2 will make it to not draw any box on first steps of game
-      if (x > 2 && Phaser.Math.Between(0, 3) === 1) {
+      if (x > LINE_WIDTH * 4 && Phaser.Math.Between(0, 3) === 1) {
         this.drawRectangle(x, topLineY)
       }
     }
@@ -149,10 +156,6 @@ export class Game extends Scene {
   }
 
   drawRectangle(xOffset: number, yOffset: number) {
-    const oneFiftOfRoadHeight = ROAD_HEIGHT / 5
-    const rectangleHeight = oneFiftOfRoadHeight * 2
-    const rectangleWidth = LINE_WIDTH / 8
-
     const positions = [
       // top
       Math.round(yOffset),
@@ -227,6 +230,7 @@ export class Game extends Scene {
     }
 
     if (this.moveOffset >= LINE_WIDTH) {
+      this.chunkCounter += 1
       const topLineY = Phaser.Math.Between(
         MAXIMUM_ROAD_TOP_Y,
         MINIMUM_ROAD_TOP_Y
@@ -236,7 +240,7 @@ export class Game extends Scene {
 
       const endPointX = this.topLines.getEndPoint().x
 
-      if (endPointX > 2 && Phaser.Math.Between(0, 1) > 0) {
+      if (endPointX > 2 && Phaser.Math.Between(0, 6) >= 0) {
         this.drawRectangle(endPointX, topLineY)
       }
 
@@ -250,12 +254,8 @@ export class Game extends Scene {
         this.bottomLines.getEndPoint().x + LINE_WIDTH + correction,
         bottomLineY
       )
-      // this.topLines?.curves.shift()
-      // this.bottomLines?.curves.shift()
       this.moveOffset = 0
     }
-
-    this.helicopter.y += 0.5
 
     //  Get the position of the plane on the path
     const x =
@@ -298,7 +298,7 @@ export class Game extends Scene {
 
     let lastX = 0
 
-    for (let i = 0; i < curves.length; i++) {
+    for (let i = this.chunkCounter; i < curves.length; i++) {
       const eachCurve = curves[i] as Phaser.Curves.Line
       points.push(eachCurve.p0, eachCurve.p1)
       lastX = eachCurve.p1.x
