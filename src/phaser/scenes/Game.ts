@@ -17,7 +17,9 @@ const MAXIMUM_ROAD_TOP_Y = Math.round(
   ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 2
 )
 
-const MINIMUM_ROAD_TOP_Y = Math.round(ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 4)
+const MINIMUM_ROAD_TOP_Y = Math.round(
+  ONE_THIRD_OF_SCREEN_HEIGHT - ONE_THIRD_OF_SCREEN_HEIGHT / 4
+)
 
 const ROAD_HEIGHT = Math.round(
   ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2
@@ -39,12 +41,19 @@ export class Game extends Scene {
   /** previous position that box rendered */
   prevBoxOffset?: number
   initialLoad: boolean
+  scoreText?: Phaser.GameObjects.Text
+  score: number
+  timer: number
+  gameOver: boolean
 
   constructor() {
     super({ key: 'Game' })
     this.moveOffset = 0
-    this.moveSpeed = 6
+    this.moveSpeed = 7
     this.initialLoad = false
+    this.score = 0
+    this.timer = 0
+    this.gameOver = false
   }
   preload() {
     this.load.spritesheet('helicopter', 'src/assets/chopper.png', {
@@ -76,7 +85,6 @@ export class Game extends Scene {
 
     this.helicopter.displayHeight = HELICOPTER_HEIGHT
     this.helicopter.scaleX = this.helicopter.scaleY
-
 
     this.helicopter.setTint(0x2b0101)
 
@@ -121,10 +129,25 @@ export class Game extends Scene {
     }
 
     this.physics.add.collider(this.boxes, this.helicopter, () => {
-      this.cameras.main.shake(250, 0.005)
+      this.setGameOver()
     })
 
+    this.scoreText = this.add
+      .text(SCREEN_WIDTH / 20, SCREEN_HEIGHT / 20, `Score: ${this.score}`, {
+        fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
+        color: '#ffffff',
+        fontSize: '30px',
+      })
+      .setScrollFactor(0)
+
     this.moveOffset = 0
+  }
+
+  setGameOver() {
+    this.helicopter?.setTint(0xff0000)
+    this.cameras.main.shake(250, 0.005)
+    this.physics.pause()
+    this.gameOver = true
   }
 
   drawRectangle(xOffset: number, yOffset: number) {
@@ -143,13 +166,14 @@ export class Game extends Scene {
       Math.round(yOffset + oneFiftOfRoadHeight * 2),
     ]
 
-    if(this.prevBoxOffset !== undefined) {
+    if (this.prevBoxOffset !== undefined) {
       positions.splice(this.prevBoxOffset, 1)
     }
 
     // pick a random position
-    const randomYOffset = positions[ Math.floor( Math.random() * positions.length ) ]
-    
+    const randomYOffset =
+      positions[Math.floor(Math.random() * positions.length)]
+
     this.prevBoxOffset = positions.indexOf(randomYOffset)
 
     const rectangle = this.add
@@ -164,7 +188,7 @@ export class Game extends Scene {
     this.boxes?.add(rectangle)
   }
 
-  update(): void {
+  update(time: number, delta: number): void {
     if (!this.helicopter) {
       throw new Error('helicopter game object not exists!')
     }
@@ -176,10 +200,23 @@ export class Game extends Scene {
       throw new Error('top and bottom lines should not be empty')
     }
 
+    if (this.gameOver) {
+      this.helicopter.setAccelerationY(1000)
+      this.helicopter.y += 5
+      this.helicopter.setRotation(0.4)
+      this.helicopter.anims.stop()
+      return
+    }
+    this.timer += delta
+    if (this.timer >= 500) {
+      this.score++
+      this.scoreText?.setText('Score: ' + this.score)
+      this.timer -= 500
+    }
+
     this.cameras.main.scrollX += this.moveSpeed
     this.helicopter.x += this.moveSpeed
     this.moveOffset += this.moveSpeed
-
 
     if (this.input.activePointer.isDown) {
       this.initialLoad = true
@@ -202,10 +239,9 @@ export class Game extends Scene {
 
       const bottomLineY = topLineY + ROAD_HEIGHT
 
-
       const endPointX = this.topLines.getEndPoint().x
 
-      // if (endPointX > 2 && Phaser.Math.Between(0, 1) === 1) {
+      // if (endPointX > 2 && Phaser.Math.Between(0, 1) > 0) {
       this.drawRectangle(endPointX, topLineY)
       // }
 
@@ -214,13 +250,34 @@ export class Game extends Scene {
         this.bottomLines.getEndPoint().x + LINE_WIDTH,
         bottomLineY
       )
-      this.topLines.curves.shift()
-      this.bottomLines.curves.shift()
+      // this.topLines?.curves.shift()
+      // this.bottomLines?.curves.shift()
       this.moveOffset = 0
+    }
+
+    //  Get the position of the plane on the path
+    const x =
+      this.helicopter.x /
+      (SCREEN_WIDTH + this.cameras.main.scrollX - this.moveOffset)
+
+    //  These vec2s contain the x/y of the plane on the path
+    //  By checking the plane.y value against the top.y and bottom.y we know if it's hit the wall or not
+    const top = this.topLines.getPoint(x)
+    const bottom = this.bottomLines.getPoint(x)
+
+    if (top.y >= this.helicopter.y) {
+      this.setGameOver()
+    }
+
+    if (bottom.y <= this.helicopter.y) {
+      this.setGameOver()
     }
 
     // clear previous command to avoid necessary redraw
     this.drawer.clear()
+    this.drawer.fillStyle(0xff0000)
+    this.drawer.fillRect(top.x - 2, top.y - 2, 10, 10)
+    this.drawer.fillRect(bottom.x - 2, bottom.y - 2, 10, 10)
 
     this.drawLandChunk(this.topLines.curves, 'top')
 
