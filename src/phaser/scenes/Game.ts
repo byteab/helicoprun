@@ -291,7 +291,7 @@ export class Game extends Scene {
     for (let i = 0; i < curves.length; i++) {
       const eachCurve = curves[i] as Phaser.Curves.Line
       points.push(eachCurve.p0, eachCurve.p1)
-      lastX = eachCurve.getEndPoint().x
+      lastX = eachCurve.p1.x
     }
 
     points.push({ x: lastX, y: yValue })
