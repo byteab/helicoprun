@@ -67,13 +67,6 @@ export class Game extends Scene {
   }
 
   create() {
-    this.physics.world.setBounds(
-      0,
-      0,
-      window.innerWidth * 2,
-      window.innerHeight
-    )
-
     this.add
       .rectangle(0, 0, window.innerWidth, window.innerHeight, 0xffffff)
       .setOrigin(0)
@@ -90,7 +83,7 @@ export class Game extends Scene {
 
     this.boxes = this.physics.add.staticGroup()
 
-    this.helicopter.setInteractive()
+    // this.helicopter.setInteractive()
     this.anims.create({
       key: 'move',
       frames: this.anims.generateFrameNumbers('helicopter', {}),
@@ -98,7 +91,7 @@ export class Game extends Scene {
       repeat: -1,
     })
     this.helicopter.anims.startAnimation('move')
-    this.helicopter.body.allowGravity = false
+    // this.helicopter.body.allowGravity = false
     this.helicopter.refreshBody()
 
     // Graphics part
@@ -109,6 +102,8 @@ export class Game extends Scene {
       0,
       MAXIMUM_ROAD_TOP_Y + ROAD_HEIGHT
     )
+
+    this.helicopter.setMaxVelocity(300)
 
     // generate initial lines
     // consider one more line as buffer
@@ -129,7 +124,7 @@ export class Game extends Scene {
     }
 
     this.physics.add.collider(this.boxes, this.helicopter, () => {
-      this.setGameOver()
+      // this.setGameOver()
     })
 
     this.scoreText = this.add
@@ -171,8 +166,7 @@ export class Game extends Scene {
     }
 
     // pick a random position
-    const randomYOffset =
-      positions[Math.floor(Math.random() * positions.length)]
+    const randomYOffset = Phaser.Utils.Array.GetRandom(positions)
 
     this.prevBoxOffset = positions.indexOf(randomYOffset)
 
@@ -228,8 +222,6 @@ export class Game extends Scene {
       this.helicopter.angle = 0
       this.helicopter.setAccelerationY(900)
     }
-
-    this.helicopter.setMaxVelocity(300)
 
     if (this.moveOffset >= LINE_WIDTH) {
       const topLineY = Phaser.Math.Between(
@@ -297,8 +289,8 @@ export class Game extends Scene {
     let lastX = 0
 
     for (let i = 0; i < curves.length; i++) {
-      const eachCurve = curves[i]
-      points.push(eachCurve.getStartPoint(), eachCurve.getEndPoint())
+      const eachCurve = curves[i] as Phaser.Curves.Line
+      points.push(eachCurve.p0, eachCurve.p1)
       lastX = eachCurve.getEndPoint().x
     }
 
