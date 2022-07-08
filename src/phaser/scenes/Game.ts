@@ -22,14 +22,14 @@ const MINIMUM_ROAD_TOP_Y = Math.round(
 )
 
 const ROAD_HEIGHT = Math.round(
-  ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2
+  ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT
 )
 
 const HELICOPTER_HEIGHT = ROAD_HEIGHT / 10
 
 // rectangles
 const oneFiftOfRoadHeight = ROAD_HEIGHT / 5
-const rectangleHeight = oneFiftOfRoadHeight * 2
+const rectangleHeight = oneFiftOfRoadHeight * 1.5
 const rectangleWidth = LINE_WIDTH / 10
 
 export class Game extends Scene {
@@ -56,7 +56,7 @@ export class Game extends Scene {
   constructor() {
     super({ key: 'Game' })
     this.moveOffset = 0
-    this.moveSpeed = 7
+    this.moveSpeed = 6
     this.initialLoad = false
     this.score = 0
     this.timer = 0
@@ -212,6 +212,7 @@ export class Game extends Scene {
       this.score++
       this.scoreText?.setText('Score: ' + this.score)
       this.timer -= 500
+      this.moveSpeed += 0.02
     }
 
     this.cameras.main.scrollX += this.moveSpeed
