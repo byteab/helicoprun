@@ -1,10 +1,15 @@
 # Helicopter Run Game
 
 ###### How to run
-```shell git clone https://github.com/TheEhsanSarshar/helicoprun```
 
-```shell cd helicoprun ```
+`shell git clone https://github.com/TheEhsanSarshar/helicoprun`
 
-```shell yarn ```
+`shell cd helicoprun `
 
-```shell yarn run dev ```
+`shell yarn `
+
+`shell yarn run dev `
+
+#### live demo
+
+https://helicoprun.vercel.app/
