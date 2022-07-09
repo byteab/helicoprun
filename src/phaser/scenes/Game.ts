@@ -1,10 +1,5 @@
 import { Scene } from 'phaser'
-
-const gameState = {
-  graphics: Phaser.GameObjects.Graphics,
-  curve: Phaser.Curves.CubicBezier,
-  curvesGroup: Phaser.Physics.Arcade.StaticGroup,
-}
+import ChopperUrl from '../../assets/chopper.png'
 
 const SCREEN_WIDTH = window.innerWidth
 const SCREEN_HEIGHT = window.innerHeight
@@ -65,7 +60,7 @@ export class Game extends Scene {
     this.chunkCounter = 0
   }
   preload() {
-    this.load.spritesheet('helicopter', 'src/assets/chopper.png', {
+    this.load.spritesheet('helicopter', ChopperUrl, {
       frameWidth: 154,
       frameHeight: 91,
     })
@@ -76,6 +71,8 @@ export class Game extends Scene {
   }
 
   create() {
+    this.scale.lockOrientation(Phaser.Scale.LANDSCAPE)
+
     this.add
       .rectangle(0, 0, window.innerWidth, window.innerHeight, 0xffffff)
       .setOrigin(0)

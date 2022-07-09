@@ -2,13 +2,19 @@ import Phaser from 'phaser'
 import { Game } from './scenes/Game'
 import { StartMenu } from './scenes/StartMenu'
 
-const config: Phaser.Types.Core.GameConfig = {
+export const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
   parent: 'phaser',
-  // scene: [StartMenu, Game],
-  scene: [Game],
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    fullscreenTarget: 'phaser',
+    parent: 'phaser',
+    expandParent: true,
+  },
+  scene: [StartMenu, Game],
   physics: {
     default: 'arcade',
     arcade: {
@@ -18,4 +24,3 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   backgroundColor: 0xffffff,
 }
-const game = new Phaser.Game(config)
