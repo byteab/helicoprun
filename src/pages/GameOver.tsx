@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { ethers } from 'ethers'
 import * as React from 'react'
+import { toast } from 'react-toastify'
 import styled from 'styled-components'
 import { useSnapshot } from 'valtio'
 import RetryImageUrl from '../assets/refresh.png'
 import { Button } from '../components/Button'
 import { GlobalSpinner } from '../components/GlobalSpinner'
 import { store } from '../store'
+import abi from '../assets/abi.json'
+import { CONTRACT_ADDRESS } from '../constants'
 
 export const GameOver = () => {
   const snap = useSnapshot(store)
@@ -14,16 +18,45 @@ export const GameOver = () => {
   >('idle')
   const claimTokens = async () => {
     setClaimState('loading')
-    setTimeout(() => {
-      setClaimState('claimed')
-      store.currentBalance += store.score / 100
-    }, 3000)
+    const tokenAmountToClaim = store.score / 100
+    const ethereum = window.ethereum
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum)
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer)
+      if (snap.account) {
+        await contract.mint(
+          snap.account,
+          ethers.utils.parseEther(String(tokenAmountToClaim))
+        )
+        store.currentBalance += tokenAmountToClaim
+        setClaimState('claimed')
+      } else {
+        toast.error('Your account is not set yet!')
+        setClaimState('failed')
+      }
+    } else {
+      setClaimState('failed')
+      toast.error('Please make sure metamask is installed!')
+    }
   }
   const getBalance = async () => {
     // get balance
-    setTimeout(() => {
-      store.currentBalance = 100
-    }, 100)
+    const ethereum = window.ethereum
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum)
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer)
+      if (snap.account) {
+        const balance = await contract.balanceOf(snap.account)
+        const formatedValue = Number(ethers.utils.formatEther(balance))
+        store.currentBalance = formatedValue
+      } else {
+        toast.error('Your account is not set yet!')
+      }
+    } else {
+      toast.error('Please make sure metamask is installed!')
+    }
   }
   React.useEffect(() => {
     getBalance()
@@ -39,7 +72,7 @@ export const GameOver = () => {
           <Image onClick={reloadTheGame} src={RetryImageUrl} />
           <ColumnsGroup>
             <FirstColumn>
-              <Text>Score {snap.score}</Text>
+              <Text>Score: {snap.score}</Text>
               <Text>
                 Earning: {snap.score / 100} <span>ENG</span>
               </Text>

@@ -25,6 +25,7 @@ export function Start() {
         if (accounts.length) {
           setAccount(accounts[0])
           store.authenticateState = 'authenticated'
+          store.account = accounts[0]
         } else {
           store.authenticateState = 'not-authenitcated'
         }
@@ -53,6 +54,7 @@ export function Start() {
         })
         if (accounts.length) {
           setAccount(accounts[0])
+          store.account = accounts[0]
           store.authenticateState = 'authenticated'
         } else {
           store.authenticateState = 'not-authenitcated'

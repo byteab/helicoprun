@@ -5,8 +5,8 @@ import styled from 'styled-components'
 interface Props {
   title: string
   disabled?: boolean
-  onClick: () => void
-  variant: 'small' | 'medium' | 'large'
+  onClick?: () => void
+  variant?: 'small' | 'medium' | 'large'
 }
 
 const VARIANTS = {

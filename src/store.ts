@@ -5,9 +5,11 @@ export const store = proxy<{
   score: number
   step: 'start' | 'gameOver' | 'game'
   currentBalance: number
+  account: string
 }>({
   authenticateState: 'idle',
   score: 0,
   step: 'start',
   currentBalance: 0,
+  account: '',
 })
