@@ -1,5 +1,7 @@
 import { Scene } from 'phaser'
+import { subscribeKey } from 'valtio/utils'
 import ChopperUrl from '../../assets/chopper.png'
+import { store } from '../../store'
 
 const SCREEN_WIDTH = window.innerWidth
 const SCREEN_HEIGHT = window.innerHeight
@@ -27,6 +29,10 @@ const oneFiftOfRoadHeight = ROAD_HEIGHT / 5
 const rectangleHeight = oneFiftOfRoadHeight * 1.5
 const rectangleWidth = LINE_WIDTH / 10
 
+const INITIAL_MOVE_SPEED = 6
+const INITIAL_HELI_Y =
+  ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2
+
 export class Game extends Scene {
   helicopter?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
   groupOfCurves?: Phaser.Physics.Arcade.StaticGroup
@@ -51,7 +57,7 @@ export class Game extends Scene {
   constructor() {
     super({ key: 'Game' })
     this.moveOffset = 0
-    this.moveSpeed = 6
+    this.moveSpeed = INITIAL_MOVE_SPEED
     this.initialLoad = false
     this.score = 0
     this.timer = 0
@@ -78,9 +84,23 @@ export class Game extends Scene {
       .setOrigin(0)
     this.helicopter = this.physics.add.sprite(
       widthFourthPart / 2,
-      ONE_THIRD_OF_SCREEN_HEIGHT + ONE_THIRD_OF_SCREEN_HEIGHT / 2,
+      INITIAL_HELI_Y,
       'helicopter'
     )
+
+    const unsubscribe = subscribeKey(store, 'step', (step) => {
+      if (step === 'game') {
+        this.score = 0
+        this.timer = 0
+        this.chunkCounter = 0
+        this.moveOffset = 0
+        this.moveSpeed = INITIAL_MOVE_SPEED
+        this.physics.resume()
+        this.scene.restart()
+        this.gameOver = false
+        unsubscribe()
+      }
+    })
 
     this.helicopterHalfHeight = this.helicopter.displayHeight / 6
 
@@ -150,6 +170,9 @@ export class Game extends Scene {
     this.cameras.main.shake(250, 0.005)
     this.physics.pause()
     this.gameOver = true
+    // global state
+    store.step = 'gameOver'
+    store.score = this.score
   }
 
   drawRectangle(xOffset: number, yOffset: number) {

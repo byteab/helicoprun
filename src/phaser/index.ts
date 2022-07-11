@@ -14,7 +14,7 @@ export const config: Phaser.Types.Core.GameConfig = {
     parent: 'phaser',
     expandParent: true,
   },
-  scene: [StartMenu, Game],
+  scene: [Game],
   physics: {
     default: 'arcade',
     arcade: {

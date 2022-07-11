@@ -11,3 +11,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+body,
+html,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+html {
+  font-size: 1em;
+}
+
+#root {
+  position: absolute;
+}
+
+/* Global animations */
+@keyframes spin-anim {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
