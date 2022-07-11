@@ -1,7 +1,3 @@
-create a start screen with a text that show your latest tokens and a connect wallet button
-create an game over screen and start again screen with claim your token value
 add sounds
 make mobile and desktop friendly
-fix white splash
-force landscape
 fix full screen small height issue
