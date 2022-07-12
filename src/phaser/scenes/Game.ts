@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Scene } from 'phaser'
 import { subscribeKey } from 'valtio/utils'
 import ChopperUrl from '../../assets/chopper.png'
@@ -94,7 +95,8 @@ export class Game extends Scene {
     })
     percentText.setOrigin(0.5, 0.5)
 
-    this.load.on('progress', function (value) {
+    this.load.on('progress', function (value: any) {
+      //@ts-ignore
       percentText.setText(parseInt(value * 100) + '%')
     })
 
