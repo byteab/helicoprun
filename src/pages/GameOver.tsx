@@ -77,7 +77,8 @@ export const GameOver = () => {
                 Earning: {snap.score / 100} <span>ENG</span>
               </Text>
               <Text>
-                Currnet Balance: {snap.currentBalance} <span>ENG</span>
+                Currnet Balance: {Number(snap.currentBalance).toFixed(3)}{' '}
+                <span>ENG</span>
               </Text>
             </FirstColumn>
             <SecondColumn>
