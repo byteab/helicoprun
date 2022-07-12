@@ -70,10 +70,45 @@ export class Game extends Scene {
       frameWidth: 154,
       frameHeight: 91,
     })
-    // this.load.spritesheet('helicopter', 'src/assets/helicopter.png', {
-    //   frameWidth: 96,
-    //   frameHeight: 32,
-    // })
+
+    // Loader part
+    const width = this.cameras.main.width
+    const height = this.cameras.main.height
+    const rectangle = this.add
+      .rectangle(0, 0, window.innerWidth, window.innerHeight, 0x2b0101)
+      .setOrigin(0)
+    const loadingText = this.make.text({
+      x: width / 2,
+      y: height / 2 - 50,
+      text: 'Loading...',
+      style: {
+        font: '20px monospace',
+        color: '#ffffff',
+      },
+    })
+    loadingText.setOrigin(0.5, 0.5)
+
+    const percentText = this.make.text({
+      x: width / 2,
+      y: height / 2 - 5,
+      text: '0%',
+      style: {
+        font: '18px monospace',
+        color: '#ffffff',
+      },
+    })
+    percentText.setOrigin(0.5, 0.5)
+
+    this.load.on('progress', function (value) {
+      percentText.setText(parseInt(value * 100) + '%')
+    })
+
+    this.load.on('complete', function () {
+      loadingText.destroy()
+      percentText.destroy()
+      rectangle.destroy()
+    })
+    // Loader part end
   }
 
   create() {
