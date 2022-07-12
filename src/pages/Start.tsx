@@ -6,7 +6,12 @@ import { useSnapshot } from 'valtio'
 import { Button } from '../components/Button'
 import { GlobalSpinner } from '../components/GlobalSpinner'
 import { GOD_WOKEN_TESTNET_CHAIN_ID } from '../constants'
+import RetryImageUrl from '../assets/refresh.png'
 import { store } from '../store'
+
+// preload images
+const img = new Image()
+img.src = RetryImageUrl
 
 export function Start() {
   const snap = useSnapshot(store)

@@ -66,11 +66,6 @@ export class Game extends Scene {
     this.chunkCounter = 0
   }
   preload() {
-    this.load.spritesheet('helicopter', ChopperUrl, {
-      frameWidth: 154,
-      frameHeight: 91,
-    })
-
     // Loader part
     const width = this.cameras.main.width
     const height = this.cameras.main.height
@@ -109,6 +104,10 @@ export class Game extends Scene {
       rectangle.destroy()
     })
     // Loader part end
+    this.load.spritesheet('helicopter', ChopperUrl, {
+      frameWidth: 154,
+      frameHeight: 91,
+    })
   }
 
   create() {
