@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import { useSnapshot } from 'valtio'
 import { Button } from '../components/Button'
 import { GlobalSpinner } from '../components/GlobalSpinner'
+import { GOD_WOKEN_TESTNET_CHAIN_ID } from '../constants'
 import { store } from '../store'
 
 export function Start() {
@@ -19,6 +20,14 @@ export function Start() {
        */
       try {
         store.authenticateState = 'loading'
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        if (
+          (await provider.getNetwork()).chainId !== GOD_WOKEN_TESTNET_CHAIN_ID
+        ) {
+          toast.error('Please make sure you are using Godwoken testnet')
+          store.authenticateState = 'not-authenitcated'
+          return
+        }
         const accounts = await window.ethereum.request({
           method: 'eth_accounts',
         })
@@ -49,6 +58,14 @@ export function Start() {
        */
       try {
         store.authenticateState = 'loading'
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        if (
+          (await provider.getNetwork()).chainId !== GOD_WOKEN_TESTNET_CHAIN_ID
+        ) {
+          toast.error('Please make sure you are using Godwoken testnet')
+          store.authenticateState = 'not-authenitcated'
+          return
+        }
         const accounts = await window.ethereum.request({
           method: 'eth_requestAccounts',
         })
