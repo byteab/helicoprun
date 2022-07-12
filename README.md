@@ -14,6 +14,10 @@
 
 https://helicoprun.vercel.app/
 
+#### app.fleek.co (IPFS hosted solution)
+
+https://delicate-boat-4101.on.fleek.co
+
 ##### Contract address
 
 0x4c7731aC05152F7A279046c2B00FF0953373C7eE
