@@ -1,4 +1,8 @@
-# Helicopter Run Game
+# Play to Earn Helicopter Run Game on Nervos Blockchain
+a Play to Earn endless runner game built with Phaser.js, React.js and Valtio ( state management ) using Nervos Blockchain. actually it's the first game that I have built. basically you have a helicopter that run in a flappy bird style and you should navigate it through the obstacles. the speed of helicopter will increase gradually and it becomes harder and harder.
+
+###### Game description and Rating
+https://theehsansarshar.itch.io/helicoprun
 
 ###### How to run
 
