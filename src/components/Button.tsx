@@ -5,8 +5,9 @@ import styled from 'styled-components'
 interface Props {
   title: string
   disabled?: boolean
-  onClick?: () => void
+  onClick?: any
   variant?: 'small' | 'medium' | 'large'
+  type?: 'primary' | 'cancel'
 }
 
 const VARIANTS = {
@@ -24,22 +25,50 @@ const VARIANTS = {
   },
 }
 
+const BUTTON_TYPE = {
+  primary: {
+    backgroundColor: 'hsl(6, 100%, 24%)',
+    backgroundColorDisabled: 'hsl(6, 30%, 24%)',
+    textColor: 'hsl(0, 0%, 98%)',
+    backgroundColorHover: 'hsl(6, 100%, 34%)',
+    backgroundColorHoverDisabled: 'hsl(6, 30%, 24%)',
+  },
+  cancel: {
+    backgroundColor: '#fff',
+    backgroundColorDisabled: 'hsl(0, 0%, 95%)',
+    textColor: 'hsl(0, 0%, 10%)',
+    backgroundColorHover: 'hsl(0, 0%, 93%)',
+    backgroundColorHoverDisabled: 'hsl(0, 0%, 95%)',
+  },
+}
+
 export const Button: React.FC<Props> = ({
   title,
   disabled,
   onClick,
   variant = 'large',
+  type = 'primary',
 }) => {
   const fontSize = VARIANTS[variant].fontSize
   const padding = VARIANTS[variant].padding
+  const backgroundColor = BUTTON_TYPE[type].backgroundColor
+  const backgroundColorDisabled = BUTTON_TYPE[type].backgroundColorDisabled
+  const backgroundColorHover = BUTTON_TYPE[type].backgroundColorHover
+  const backgroundColorHoverDisabled =
+    BUTTON_TYPE[type].backgroundColorHoverDisabled
+  const textColor = BUTTON_TYPE[type].textColor
   return (
     <ButtonElem
       onClick={onClick}
       style={{
         //@ts-ignore
-        '--bg-color': disabled ? 'hsl(6, 30%, 24%)' : 'hsl(6, 100%, 24%) ',
+        '--bg-color': disabled ? backgroundColorDisabled : backgroundColor,
         '--font-size': fontSize + 'rem',
         '--padding': padding,
+        '--font-color': textColor,
+        '--bg-color-hover': disabled
+          ? backgroundColorHoverDisabled
+          : backgroundColorHover,
       }}
       disabled={disabled}
     >
@@ -52,13 +81,14 @@ const ButtonElem = styled.button`
   border: none;
   padding: var(--padding);
   font-size: var(--font-size);
+  line-height: 100%;
   background-color: var(--bg-color);
-  color: #fff;
+  color: var(--font-color);
   border-radius: 5px;
   letter-spacing: 2px;
+  border: 1px solid hsl(0, 0%, 10%);
 
   &:hover {
-    background-color: ${(p) =>
-      p.disabled ? 'hsl(6, 30%, 24%)' : 'hsl(6, 100%, 34%)'};
+    background-color: var(--bg-color-hover);
   }
 `

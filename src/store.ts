@@ -1,13 +1,18 @@
 import { proxy } from 'valtio'
 
 export const store = proxy<{
-  authenticateState: 'idle' | 'not-authenitcated' | 'loading' | 'authenticated'
+  authenticateState:
+    | 'idle'
+    | 'not-authenitcated'
+    | 'loading'
+    | 'authenticated'
+    | 'skip'
   score: number
   step: 'start' | 'gameOver' | 'game'
   currentBalance: number
   account: string
 }>({
-  authenticateState: 'idle',
+  authenticateState: 'not-authenitcated',
   score: 0,
   step: 'start',
   currentBalance: 0,

@@ -9,14 +9,20 @@ import { Button } from '../components/Button'
 import { GlobalSpinner } from '../components/GlobalSpinner'
 import { store } from '../store'
 import abi from '../assets/abi.json'
-import { CONTRACT_ADDRESS } from '../constants'
+import { CONTRACT_ADDRESS, GOD_WOKEN_TESTNET_CHAIN_ID } from '../constants'
+import { Dialog } from '../components/Dialog'
 
 export const GameOver = () => {
   const snap = useSnapshot(store)
   const [claimState, setClaimState] = React.useState<
-    'idle' | 'loading' | 'claimed' | 'failed'
+    'idle' | 'loading' | 'claimed' | 'failed' | 'need-to-connect'
   >('idle')
-  const claimTokens = async () => {
+  // the authenticated is because of async nature of snap.authenticateState
+  const claimTokens = async (account?: string) => {
+    if (!account && snap.authenticateState === 'not-authenitcated') {
+      setClaimState('need-to-connect')
+      return
+    }
     setClaimState('loading')
     const tokenAmountToClaim = store.score / 100
     const ethereum = window.ethereum
@@ -24,12 +30,12 @@ export const GameOver = () => {
       const provider = new ethers.providers.Web3Provider(ethereum)
       const signer = provider.getSigner()
       const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer)
-      if (snap.account) {
+      const _account = snap.account || account
+      if (_account) {
         await contract.mint(
-          snap.account,
+          _account,
           ethers.utils.parseEther(String(tokenAmountToClaim))
         )
-        store.currentBalance += tokenAmountToClaim
         setClaimState('claimed')
       } else {
         toast.error('Your account is not set yet!')
@@ -58,15 +64,57 @@ export const GameOver = () => {
       toast.error('Please make sure metamask is installed!')
     }
   }
+
   React.useEffect(() => {
-    getBalance()
-  }, [])
+    if (snap.authenticateState === 'authenticated') {
+      getBalance()
+    }
+  }, [snap.authenticateState])
+
+  const connectWithMetamask = async () => {
+    if (window.ethereum) {
+      /**
+       * get me all ethereum accounts. if I am already authorized in [Metamask]
+       */
+      try {
+        store.authenticateState = 'loading'
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        if (
+          (await provider.getNetwork()).chainId !== GOD_WOKEN_TESTNET_CHAIN_ID
+        ) {
+          toast.error('Please make sure you are using Godwoken testnet')
+          store.authenticateState = 'not-authenitcated'
+          return
+        }
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        })
+        if (accounts.length) {
+          store.account = accounts[0]
+          store.authenticateState = 'authenticated'
+          claimTokens(accounts[0])
+        } else {
+          store.authenticateState = 'not-authenitcated'
+        }
+      } catch (error) {
+        store.authenticateState = 'not-authenitcated'
+      }
+    } else {
+      toast.error('Please make sure Metamask is installed!')
+    }
+  }
 
   const reloadTheGame = () => {
     store.step = 'game'
   }
   return (
     <Wrapper>
+      {claimState === 'need-to-connect' ? (
+        <Dialog
+          onAccept={connectWithMetamask}
+          onReject={() => setClaimState('idle')}
+        />
+      ) : null}
       <CardWrapper>
         <Card>
           <Image onClick={reloadTheGame} src={RetryImageUrl} />
@@ -77,8 +125,12 @@ export const GameOver = () => {
                 Earning: {snap.score / 100} <span>ENG</span>
               </Text>
               <Text>
-                Currnet Balance: {Number(snap.currentBalance).toFixed(3)}{' '}
-                <span>ENG</span>
+                {snap.currentBalance
+                  ? `Currnet Balance: ${Number(snap.currentBalance).toFixed(
+                      3
+                    )} `
+                  : ''}
+                {snap.currentBalance ? <span>ENG</span> : ''}
               </Text>
             </FirstColumn>
             <SecondColumn>
@@ -87,12 +139,16 @@ export const GameOver = () => {
                   variant="small"
                   disabled={claimState === 'loading'}
                   title="Claim Tokens"
-                  onClick={claimTokens}
+                  onClick={() => claimTokens()}
                 />
-              ) : null}
+              ) : (
+                <ClaimedText>Claimed</ClaimedText>
+              )}
             </SecondColumn>
           </ColumnsGroup>
-          {claimState === 'loading' ? <GlobalSpinner /> : null}
+          {claimState === 'loading' || snap.authenticateState === 'loading' ? (
+            <GlobalSpinner />
+          ) : null}
         </Card>
       </CardWrapper>
     </Wrapper>
@@ -113,6 +169,7 @@ const Text = styled.h1`
   font-size: 1.3rem;
   color: hsl(1000, 0%, 30%);
   text-align: left;
+  min-width: 300px;
   margin-right: var(--margin-right);
   & span {
     color: red;
@@ -132,6 +189,7 @@ const SecondColumn = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: flex-end;
+  min-width: 200px;
 `
 
 const ColumnsGroup = styled.div`
@@ -147,6 +205,7 @@ const CardWrapper = styled.div`
   background-color: #fff;
   padding: 30px 40px;
   border-radius: 10px;
+  min-height: 40%;
 `
 
 const Card = styled.div`
@@ -154,6 +213,14 @@ const Card = styled.div`
   align-items: flex-start;
   display: flex;
   flex-direction: column;
+`
+
+const ClaimedText = styled.h1`
+  font-size: 3rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: hsl(40, 100%, 50%);
+  transform: rotateZ(-20deg);
 `
 
 const Wrapper = styled.div`
